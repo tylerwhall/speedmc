@@ -7,6 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     (r'^stats/', include('speedmc.stats.urls')),
     (r'^map/', include('speedmc.map.urls')),
+    (r'^game/', include('speedmc.mcauth.urls')),
     (r'^$', 'basics.views.home'),
     (r'^login$', 'basics.views.login'),
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
