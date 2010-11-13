@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.template import Context
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.datastructures import MultiValueDictKeyError
 
 def checkserver(request):
     #c = Context({})
