@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>To Be Continued...</h1>
+{% if stats %}
+<table>
+    {% for k, v in stats %}
+    <tr> <td> {{k}}</td><td>{{v}}</td> </tr>
+    {% endfor %}
+</table>
+{% else %}
+Could not connect to server.
+{% endif %}
 {% endblock %}
 {% block header %}
 Server Statistics

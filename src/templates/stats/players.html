@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+{% if players != None %}
+    {{ players|length }} player{{players|length|pluralize}} online.
+    {% if players %}
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Can build?</th>
+                <th>Admin</th>
+            </tr>
+        {% for player in players %}
+            <tr>
+                <td>{{ player.name }}</td>
+                <td>{{ player.canBuild }}</td>
+                <td>{{ player.isAdmin }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+{% else %}
+    Could not connect to server.
+{% endif %}
+{% endblock %}
+{% block header %}
+Server Statistics
+{% endblock %}
