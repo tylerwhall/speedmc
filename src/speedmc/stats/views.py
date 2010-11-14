@@ -6,14 +6,7 @@ import xmlrpclib
 def getProxy():
     return xmlrpclib.ServerProxy("http://user:password@evanwilliams:20012")
 
-def getPlayers():
-    p = getProxy()
-    try:
-        return p.player.getPlayers()
-    except IOError:
-        return None
-
-def getStats():
+def getServerInfo():
     p = getProxy()
     stats = [
         ('MOTD', p.server.getMotd()),
@@ -22,27 +15,30 @@ def getStats():
         ('Disallowed Items', p.server.getDisallowedItems()),
         ('Hey0 Plugins', ','.join([pl['id'] for pl in p.server.getPlugins()])),
     ]
-    return stats
+    players = p.player.getPlayers()
+    return stats, players
 
-def links():
-    return [
-        (reverse(players), 'Users Logged On'),
-        (reverse(home), 'Server Stats'),
-        (reverse(home), 'Minecraft Stats'),
-    ]
+def getPlayerInventory(player):
+    p = getProxy()
+    i = p.player.getInventory(player)
+    return [(k, i[k]) for k in sorted(i.keys(), key=lambda x:int(x))]
 
 def home(request):
-    d = {"links": links()}
+    d = {}
     try:
-        d['stats'] = getStats()
+        d['stats'], d['players'] = getServerInfo()
     except IOError:
         pass
     return render_to_response('stats/home.html', d)
 
-def players(request):
-    d = {"links": links()}
+def player(request, name):
+    d = {}
+    d['playername'] = name
     try:
-        d['players'] = getPlayers()
+        d['inventory'] = getPlayerInventory(name)
     except IOError:
         pass
-    return render_to_response('stats/players.html', d)
+    except xmlrpclib.Fault:
+        d['notonline'] = True
+
+    return render_to_response('stats/player.html', d)

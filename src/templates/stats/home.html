@@ -1,13 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
-{% if stats %}
+<h1>Server Stats</h1>
+{% if stats != None %}
 <table>
     {% for k, v in stats %}
     <tr> <td> {{k}}</td><td>{{v}}</td> </tr>
     {% endfor %}
 </table>
 {% else %}
-Could not connect to server.
+<p>Could not connect to server.</p>
+{% endif %}
+<h1>Players</h1>
+{% if players != None %}
+    {% if players %}
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Can build?</th>
+            </tr>
+        {% for player in players %}
+            <tr>
+                <td><a href={% url speedmc.stats.views.player player.name %}>{{ player.name }}</a></td>
+                <td>{{ player.canBuild }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+    <p>No players online.</p>
+    {% endif %}
+{% else %}
+    <p>Could not connect to server.</p>
 {% endif %}
 {% endblock %}
 {% block header %}
