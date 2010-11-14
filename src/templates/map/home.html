@@ -1,23 +1,27 @@
 {% extends "base.html" %} 
+{% block onload %}
+onload="initialize()" style="height:100%"
+{% endblock %}
 {% block script %}
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <style type="text/css">
-  html { height: 100% }
+  html { height: 100%; }
   body { height: 100%; }
-  #mcmap { height: 100% }
+  #mcmap { height: 100%; }
 </style>
-<script type="text/javascript" src="markers.js"></script>
+<script type="text/javascript" src="/static/gmap/markers.js"></script>
+<script type="text/javascript" src="/static/gmap/regions.js"></script>
 <script type="text/javascript"
     src="http://maps.google.com/maps/api/js?sensor=false">
 </script>
 <script type="text/javascript">
   var config = {
-    path:        '/static/tiles',
+    path:        '/static/gmap/tiles',
     fileExt:     'png',
     tileSize:     384,
     defaultZoom:  1,
-    maxZoom:      8,
-    cacheMinutes: 1, // Change this to have browsers automatically request new images every x minutes
+    maxZoom:      9,
+    cacheMinutes: 0, // Change this to have browsers automatically request new images every x minutes
     debug:        false
   };
   
@@ -136,7 +140,19 @@
   var map;
   
   var markersInit = false;
-  
+
+  function prepareSignMarker(marker, item) {
+      
+      var c = "<div class=\"infoWindow\"><img src=\"signpost.png\" /><p>" + item.msg.replace(/\n/g,"<br/>") + "</p></div>";
+      var infowindow = new google.maps.InfoWindow({
+content: c
+});
+google.maps.event.addListener(marker, 'click', function() {
+        infowindow.open(map,marker);
+        });
+
+}
+
   function initMarkers() {
     if (markersInit) { return; }
     
@@ -144,14 +160,71 @@
 
     for (i in markerData) {
       var item = markerData[i];
+
+      // a default:
+      var iconURL = '';
+      
+      if (item.type == 'spawn') { iconURL = 'http://google-maps-icons.googlecode.com/files/home.png';}
+      if (item.type == 'sign')
+          continue;
+      if (item.type == 'sign') { iconURL = 'signpost_icon.png';}
       
       var converted = fromWorldToLatLng(item.x, item.y, item.z);
        var marker = new google.maps.Marker({
         position: converted,
         map: map,
-        title: item.msg
-      });
+        title: item.msg, 
+        icon: iconURL
+
+        });
+
+       if (item.type == 'sign') {
+           prepareSignMarker(marker, item);
+       }
+
    }
+  }
+  
+  var regionsInit = false;
+  function initRegions() {
+    if (regionsInit) { return; }
+    
+    regionsInit = true;
+    
+    for (i in regionData) {
+      var region = regionData[i];
+      var converted = new google.maps.MVCArray();
+      for (j in region.path) {
+        var point = region.path[j];
+        converted.push(fromWorldToLatLng(point.x, point.y, point.z));
+      }
+      
+      if (region.closed) {
+        new google.maps.Polygon({
+          clickable: false,
+          geodesic: false,
+          map: map,
+          strokeColor: region.color,
+          strokeOpacity: region.opacity,
+          strokeWeight: 2,
+          fillColor: region.color,
+          fillOpacity: region.opacity * 0.25,
+          zIndex: i,
+          paths: converted
+        });
+      } else {
+        new google.maps.Polyline({
+          clickable: false,
+          geodesic: false,
+          map: map,
+          strokeColor: region.color,
+          strokeOpacity: region.opacity,
+          strokeWeight: 2,
+          zIndex: i,
+          path: converted
+        });
+      }
+    }
   }
   
   function initialize() {
@@ -161,6 +234,7 @@
       navigationControl: true,
       scaleControl: false,
       mapTypeControl: false,
+      streetViewControl: false,
       mapTypeId: 'mcmap'
     };
     map = new google.maps.Map(document.getElementById("mcmap"), mapOptions);
@@ -186,8 +260,21 @@
     // We can now set the map to use the 'coordinate' map type
     map.setMapTypeId('mcmap');
 	
-	// initialize the markers
+	// initialize the markers and regions
 	initMarkers();
+    initRegions();
+
+    var compassDiv = document.createElement('DIV');
+
+    compassDiv.style.padding = '5px';
+
+    var compassImg = document.createElement('IMG');
+    compassImg.src="/static/gmap/compass.png";
+    compassDiv.appendChild(compassImg);
+
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(compassDiv);
+
+
   }
 </script>
 {% endblock %}
