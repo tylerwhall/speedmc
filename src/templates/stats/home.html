@@ -2,7 +2,7 @@
 {% block content %}
 <h1>Server Stats</h1>
 {% if stats != None %}
-<table>
+<table class=content>
     {% for k, v in stats %}
     <tr> <td> {{k}}</td><td>{{v}}</td> </tr>
     {% endfor %}
@@ -13,7 +13,7 @@
 <h1>Players</h1>
 {% if players != None %}
     {% if players %}
-        <table>
+        <table class=content>
             <tr>
                 <th>Name</th>
                 <th>Can build?</th>
